@@ -1,0 +1,32 @@
+{
+	"name": "commas",
+	"version": "1.0.0",
+	"description": "Grammar-check for WordPress.",
+	"scripts": {
+		"build": "cross-env BABEL_ENV=default NODE_ENV=production webpack",
+		"dev": "cross-env BABEL_ENV=default NODE_ENV=development webpack --watch",
+		"test": "npm run lint",
+		"lint": "eslint src/*.js"
+	},
+	"engines": {
+		"node": ">=8.0.0",
+		"npm": ">=6.0.0"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.11.0",
+		"@babel/plugin-proposal-object-rest-spread": "^7.11.0",
+		"@babel/plugin-transform-async-to-generator": "^7.10.4",
+		"@babel/plugin-transform-react-jsx": "^7.10.1",
+		"@babel/preset-env": "^7.11.0",
+		"autoprefixer": "^9.8.6",
+		"babel-eslint": "^10.1.0",
+		"babel-loader": "^8.1.0",
+		"cross-env": "7.0.2",
+		"eslint": "^7.6.0",
+		"eslint-config-wordpress": "^2.0.0",
+		"eslint-loader": "^4.0.2",
+		"eslint-plugin-react": "^7.20.5",
+		"webpack": "^4.44.1",
+		"webpack-cli": "^3.3.12"
+	}
+}
