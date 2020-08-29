@@ -17,8 +17,8 @@ const {
 	Button,
 	PanelBody,
 	Placeholder,
-	SelectControl,
 	Spinner,
+	TextControl,
 	Toolbar,
 	ToolbarButton
 } = wp.components;
@@ -28,7 +28,10 @@ const {
 	useDispatch
 } = wp.data;
 
-const { useState } = wp.element;
+const {
+	useEffect,
+	useState
+} = wp.element;
 
 const Edit = ({
 	clientId
@@ -41,7 +44,26 @@ const Edit = ({
 
 	const { createNotice } = useDispatch( 'core/notices' );
 
+	useEffect( async() => {
+		let model;
+
+		await wp.api.loadPromise.then( () => {
+			model = new wp.api.models.Settings();
+		});
+
+		if ( false === isAPILoaded ) {
+			model.fetch().then( response => {
+				if ( '' !== response.commas_api ) {
+					setAPI( response.commas_api );
+				}
+				setAPILoaded( true );
+			});
+		}
+	}, []);
+
 	const [ isLoading, setLoading ] = useState( false );
+	const [ isAPILoaded, setAPILoaded ] = useState( false );
+	const [ API, setAPI ] = useState( null );
 	const [ results, setResults ] = useState([]);
 
 	const proofreadRequest = async() => {
@@ -54,7 +76,10 @@ const Edit = ({
 			let data = await apiFetch({
 				path: 'commas/v1/check',
 				method: 'POST',
-				data: { content }
+				data: {
+					content,
+					api: API
+				}
 			});
 			data = JSON.parse( data );
 
@@ -79,6 +104,17 @@ const Edit = ({
 			);
 		}
 
+		setLoading( false );
+	};
+
+	const changeAPI = async() => {
+		setLoading( true );
+		const model = new wp.api.models.Settings({
+			// eslint-disable-next-line camelcase
+			commas_api: API
+		});
+
+		await model.save();
 		setLoading( false );
 	};
 
@@ -121,35 +157,45 @@ const Edit = ({
 								"{ result.sentence }"
 							</div>
 						) }
-
-						{ result.replacements && 0 < result.replacements.length && (
-							<SelectControl
-								label={ __( 'Possible Replacements' ) }
-								options={ result.replacements.map( replacement => (
-									{
-										value: replacement.value,
-										label: replacement.value
-									}
-								) ) }
-							/>
-						) }
 					</PanelBody>
 				) ) }
 
-				<PanelBody>
-					{ isLoading ? (
+				{ isLoading ? (
+					<PanelBody>
 						<Placeholder>
 							<Spinner/>
 						</Placeholder>
-					) : (
-						<Button
-							isPrimary
-							onClick={ proofreadRequest }
-						>
-							{ __( 'Proofread' ) }
-						</Button>
-					) }
-				</PanelBody>
+					</PanelBody>
+				) : (
+					<>
+						<PanelBody>
+							<Button
+								isPrimary
+								onClick={ proofreadRequest }
+							>
+								{ __( 'Proofread' ) }
+							</Button>
+						</PanelBody>
+
+						<PanelBody>
+							<TextControl
+								label={ __( 'GrammarBot API' ) }
+								disabled={ isLoading }
+								value={ API }
+								onChange={ setAPI }
+							/>
+
+							<Button
+								isPrimary
+								isBusy={ isLoading }
+								onClick={ changeAPI }
+							>
+								{ __( 'Save API' ) }
+							</Button>
+						</PanelBody>
+					</>
+				) }
+
 			</InspectorControls>
 
 			<InnerBlocks
